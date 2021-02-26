@@ -39,16 +39,18 @@ in vec4 vTextcoord_atlas;
 
 void main()
 {
+	//formula taken from https://learnopengl.com/Advanced-Lighting/Bloom
 	vec3 color = texelFetch(hdr_image, 2 * ivec2(gl_FragCoord.xy),0).rgb;
+	//using color inherent brightness to the human eye determine how bright the color is.
 	float brightness = dot(color.rgb,vec3(0.2126, 0.7152, 0.0722));
 	vec4 brightPassColor;
 	
-	float brightnessMultiplier = step(1,brightness);
-	brightnessMultiplier = 2*brightnessMultiplier + -0.25 * brightnessMultiplier + 0.25;
+	//if brightness is greater than one then multiply color by 2 and if its less than one then divide the color vector by 10
 
+	float brightnessMultiplier = step(1,brightness);
+	brightnessMultiplier = 2*brightnessMultiplier + -0.1 * brightnessMultiplier + 0.1;
 	brightPassColor = vec4(color.rgb * brightnessMultiplier, 1.0);
 
+	//output the dimmed or brightened color
 	rtFragColor = brightPassColor;
-	// DUMMY OUTPUT: all fragments are OPAQUE ORANGE
-	//rtFragColor = vec4(1.0, 0.5, 0.0, 1.0);
 }

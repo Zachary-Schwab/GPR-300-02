@@ -42,21 +42,19 @@ uniform float weight[5] = float[] (0.227027, 0.1945946, 0.1216216, 0.054054, 0.0
 
 void main()
 {
+	//formula taken from https://learnopengl.com/Advanced-Lighting/Bloom
+	//get texture size of single fragment
 	vec2 texOffset = 1.0 / textureSize(hdr_image,0);
+	//intial color value
 	vec3 color = texture(hdr_image, vTexcoord_atlas.xy).rgb * weight[0];
 
 	for(int i = 1; i < weight.length(); i++)
 	{
+		//combine the nearby pixels on a single axis by multiplying by the axis as one of the axis is set to 0;
 		color += (texture(hdr_image, vTexcoord_atlas.xy + vec2(texOffset.x * i * uAxis.x, texOffset.y * i * uAxis.y)).rgb * weight[i]);
 		color += (texture(hdr_image, vTexcoord_atlas.xy - vec2(texOffset.x * i * uAxis.x, texOffset.y * i * uAxis.y)).rgb * weight[i]);
 	}
 
-	// DUMMY OUTPUT: all fragments are OPAQUE AQUA
+	//output blurred color
 	rtFragColor = vec4(color,1.0);
-
-	//blurring along an axis:
-	// -> sample neighboring pixels, output weighted average
-	//		-> coordinate offset by ome amount (add/sub displacement vector)
-	//			-> example: horizontal, dv = vec2(1 / resolution (width), 0)
-	//			-> example: vertical, dv = vec2(0, 1 / height)
 }

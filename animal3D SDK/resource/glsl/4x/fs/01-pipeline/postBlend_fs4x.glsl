@@ -24,7 +24,7 @@
 
 #version 450
 
-// ****TO-DO:
+// ****DONE:
 //	-> declare texture coordinate varying and set of input textures
 //	-> implement some sort of blending algorithm that highlights bright areas
 //		(hint: research some Photoshop blend modes)
@@ -34,22 +34,18 @@ in vec4 vTexcoord_atlas;
 layout (location = 0) out vec4 rtFragColor;
 
 layout (binding = 0) uniform sampler2D sceneTexture;
-layout (binding = 0) uniform sampler2D verticalBlur2;
-layout (binding = 0) uniform sampler2D verticalBlur4;
-layout (binding = 0) uniform sampler2D verticalBlur8;
+layout (binding = 1) uniform sampler2D verticalBlur2;
+layout (binding = 2) uniform sampler2D verticalBlur4;
+layout (binding = 3) uniform sampler2D verticalBlur8;
 
 void main()
 {
-/*
-	vec4 composite = vec4(0.0);
-	vec4 sceneWeightedColor = (1.0 - texture2D(sceneTexture,vTexcoord_atlas.xy));
-	vec4 verticalBlurHalfWeightedColor = (1.0 - texture2D(verticalBlur2,vTexcoord_atlas.xy));
-	vec4 verticalBlurQuarterWeightedColor = (1.0 - texture2D(verticalBlur4,vTexcoord_atlas.xy));
-	vec4 verticalBlurEighthWeightedColor = (1.0 - texture2D(verticalBlur8,vTexcoord_atlas.xy));
-	composite = 1.0 - (sceneWeightedColor * verticalBlurHalfWeightedColor * verticalBlurQuarterWeightedColor * verticalBlurEighthWeightedColor);
-	*/
-	vec4 composite = 1.0 - (1.0 - texture2D(sceneTexture,vTexcoord_atlas.xy)) * (1.0 - texture2D(verticalBlur2,vTexcoord_atlas.xy)) * (1.0 - texture2D(verticalBlur4,vTexcoord_atlas.xy));
-	vec4 verticalBlurEighthWeightedColor = (1.0 - texture2D(verticalBlur8,vTexcoord_atlas.xy));
-	// DUMMY OUTPUT: all fragments are OPAQUE PURPLE
+	//grab the color of each frag from the 4 previous passes
+	vec4 sceneColor = (1.0 - texture2D(sceneTexture,vTexcoord_atlas.xy));
+	vec4 verticalBlur2Color = (1.0 - texture2D(verticalBlur2,vTexcoord_atlas.xy));
+	vec4 verticalBlur4Color = (1.0 - texture2D(verticalBlur4,vTexcoord_atlas.xy));
+	vec4 verticalBlur8Color = (1.0 - texture2D(verticalBlur8,vTexcoord_atlas.xy));
+	vec4 composite = 1.0 - (sceneColor * verticalBlur2Color * verticalBlur4Color * verticalBlur8Color);	//composite them all together
+	//output
 	rtFragColor = composite;
 }
