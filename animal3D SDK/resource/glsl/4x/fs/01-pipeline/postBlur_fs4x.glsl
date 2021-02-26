@@ -30,6 +30,8 @@
 //	-> declare Gaussian blur function that samples along one axis
 //		(hint: the efficiency of this is described in class)
 
+//Zachary Schwab
+
 in vec4 vTexcoord_atlas;
 
 uniform vec2 uAxis;
@@ -42,7 +44,7 @@ uniform float weight[5] = float[] (0.227027, 0.1945946, 0.1216216, 0.054054, 0.0
 
 void main()
 {
-	//formula taken from https://learnopengl.com/Advanced-Lighting/Bloom
+	//formula taken from https://learnopengl.com/Advanced-Lighting/Bloom modified by Zack
 	//get texture size of single fragment
 	vec2 texOffset = 1.0 / textureSize(hdr_image,0);
 	//intial color value

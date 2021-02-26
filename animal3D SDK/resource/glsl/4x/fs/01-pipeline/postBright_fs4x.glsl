@@ -30,6 +30,7 @@
 //	-> implement simple "tone mapping" such that the brightest areas of the 
 //		image are emphasized, and the darker areas get darker
 
+//Zachary Schwab
 
 layout (location = 0) out vec4 rtFragColor;
 

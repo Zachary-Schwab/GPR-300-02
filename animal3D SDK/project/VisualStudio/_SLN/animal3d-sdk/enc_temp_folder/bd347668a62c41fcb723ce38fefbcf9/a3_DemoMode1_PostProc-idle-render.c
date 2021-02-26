@@ -430,7 +430,7 @@ void a3postproc_render(a3_DemoState const* demoState, a3_DemoMode1_PostProc cons
 	currentWriteFBO = writeFBO[postproc_renderPassBright2];
 	a3framebufferActivate(currentWriteFBO);
 	a3vertexDrawableRenderActive();
-	//send axis as 1 and 0 as to zero out the calc for the axis that is not being blurred
+
 	currentDemoProgram = demoState->prog_postBlur;
 	a3shaderProgramActivate(currentDemoProgram->program);
 	pixelSize.x = 1.0f;
@@ -499,7 +499,6 @@ void a3postproc_render(a3_DemoState const* demoState, a3_DemoMode1_PostProc cons
 	a3framebufferActivate(currentWriteFBO);
 	a3vertexDrawableRenderActive();
 
-	//pass blend all the previous buffers so it can composite them
 	currentDemoProgram = demoState->prog_postBlend;
 	a3shaderProgramActivate(currentDemoProgram->program);
 	a3framebufferBindColorTexture(writeFBO[postproc_renderPassScene], 0, 0);
