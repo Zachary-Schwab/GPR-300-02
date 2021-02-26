@@ -29,10 +29,27 @@
 //	-> implement some sort of blending algorithm that highlights bright areas
 //		(hint: research some Photoshop blend modes)
 
+in vec4 vTexcoord_atlas;
+
 layout (location = 0) out vec4 rtFragColor;
+
+layout (binding = 0) uniform sampler2D sceneTexture;
+layout (binding = 0) uniform sampler2D verticalBlur2;
+layout (binding = 0) uniform sampler2D verticalBlur4;
+layout (binding = 0) uniform sampler2D verticalBlur8;
 
 void main()
 {
+/*
+	vec4 composite = vec4(0.0);
+	vec4 sceneWeightedColor = (1.0 - texture2D(sceneTexture,vTexcoord_atlas.xy));
+	vec4 verticalBlurHalfWeightedColor = (1.0 - texture2D(verticalBlur2,vTexcoord_atlas.xy));
+	vec4 verticalBlurQuarterWeightedColor = (1.0 - texture2D(verticalBlur4,vTexcoord_atlas.xy));
+	vec4 verticalBlurEighthWeightedColor = (1.0 - texture2D(verticalBlur8,vTexcoord_atlas.xy));
+	composite = 1.0 - (sceneWeightedColor * verticalBlurHalfWeightedColor * verticalBlurQuarterWeightedColor * verticalBlurEighthWeightedColor);
+	*/
+	vec4 composite = 1.0 - (1.0 - texture2D(sceneTexture,vTexcoord_atlas.xy)) * (1.0 - texture2D(verticalBlur2,vTexcoord_atlas.xy)) * (1.0 - texture2D(verticalBlur4,vTexcoord_atlas.xy));
+	vec4 verticalBlurEighthWeightedColor = (1.0 - texture2D(verticalBlur8,vTexcoord_atlas.xy));
 	// DUMMY OUTPUT: all fragments are OPAQUE PURPLE
-	rtFragColor = vec4(0.5, 0.0, 1.0, 1.0);
+	rtFragColor = composite;
 }

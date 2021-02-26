@@ -30,10 +30,25 @@
 //	-> implement simple "tone mapping" such that the brightest areas of the 
 //		image are emphasized, and the darker areas get darker
 
+
 layout (location = 0) out vec4 rtFragColor;
+
+layout (binding = 0) uniform sampler2D hdr_image;
+
+in vec4 vTextcoord_atlas;
 
 void main()
 {
+	vec3 color = texelFetch(hdr_image, 2 * ivec2(gl_FragCoord.xy),0).rgb;
+	float brightness = dot(color.rgb,vec3(0.2126, 0.7152, 0.0722));
+	vec4 brightPassColor;
+	
+	float brightnessMultiplier = step(1,brightness);
+	brightnessMultiplier = 2*brightnessMultiplier + -0.25 * brightnessMultiplier + 0.25;
+
+	brightPassColor = vec4(color.rgb * brightnessMultiplier, 1.0);
+
+	rtFragColor = brightPassColor;
 	// DUMMY OUTPUT: all fragments are OPAQUE ORANGE
-	rtFragColor = vec4(1.0, 0.5, 0.0, 1.0);
+	//rtFragColor = vec4(1.0, 0.5, 0.0, 1.0);
 }
