@@ -30,12 +30,41 @@
 //	-> implement Phong sum with samples from the above
 //		(hint: this entire shader is about sampling textures)
 
+uniform int uCount;
+
+uniform sampler2D uImage00; //diffuse atlas
+uniform sampler2D uImage01; //specular atlas
+
+uniform sampler2D uImage04; // textcoord g-buffer
+uniform sampler2D uImage05; //normal g-buffer
+uniform sampler2D uImage06; //position g-buffer
+uniform sampler2D uImage07; //depth g-buffer
+uniform sampler2D uImage08; //ligh prepass g-buffer
+
+uniform mat4 uPB_inv; // inverse bias projection
+
 in vec4 vTexcoord_atlas;
 
 layout (location = 0) out vec4 rtFragColor;
 
 void main()
 {
-	// DUMMY OUTPUT: all fragments are OPAQUE AQUA
-	rtFragColor = vec4(0.0, 1.0, 0.5, 1.0);
+	// grab diffuse and specular sample
+	vec4 sceneTexcoord = texture(uImage04, vTexcoord_atlas.xy);
+	vec4 diffuseSample = texture(uImage00, sceneTexcoord.xy);
+	vec4 specularSample = texture(uImage01, sceneTexcoord.xy);
+	
+	//grap postion and do a perspective divide
+	vec4 positon_screen = vTexcoord_atlas;
+	positon_screen.z = texture(uImage07, sceneTexcoord.xy).r;
+
+	vec4 position_view = uPB_inv * positon_screen;
+	position_view /= position_view.w;
+	//grab normal and position
+	vec4 normal = texture(uImage05, vTexcoord_atlas.xy);
+	normal = (normal - 0.5) * 2.0;
+
+	positon_screen = texture(uImage08, sceneTexcoord.xy);
+
+	rtFragColor = diffuseSample;
 }

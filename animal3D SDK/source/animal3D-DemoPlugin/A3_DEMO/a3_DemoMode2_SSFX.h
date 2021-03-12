@@ -167,13 +167,15 @@ struct a3_DemoMode2_SSFX
 	a3_ProjectorMatrixStack projectorMatrixStack[ssfxMaxCount_projector];
 
 	// light components and related data
-	//union {
-	//	a3_PointLightComponent pointLight[ssfxMaxCount_pointLight];
-	//	struct {
-	//	};
-	//};
-	a3_PointLightData pointLightData[ssfxMaxCount_pointLight];
-	a3mat4 pointLightMVP[ssfxMaxCount_pointLight];
+	union lightData {
+		a3_PointLightComponent pointLight[ssfxMaxCount_pointLight];
+		struct lightMVPs{
+			a3mat4 pointLightMVP[ssfxMaxCount_pointLight];
+			a3_PointLightData pointLightData[ssfxMaxCount_pointLight];
+		};
+	};
+	
+	
 };
 
 

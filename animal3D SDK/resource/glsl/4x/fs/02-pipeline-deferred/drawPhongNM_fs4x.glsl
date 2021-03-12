@@ -38,10 +38,24 @@
 
 uniform int uCount;
 
-layout (location = 0) out vec4 rtFragColor;
-
 // location of viewer in its own space is the origin
 const vec4 kEyePos_view = vec4(0.0, 0.0, 0.0, 1.0);
+
+struct sLights
+{
+	vec4 position;					// position in rendering target space
+	vec4 worldPos;					// original position in world space
+	vec4 color;						// RGB color with padding
+	int radius;						// radius (distance of effect from center)
+	int radiusSq;					// radius squared (if needed)
+	int radiusInv;					// radius inverse (attenuation factor)
+	int radiusInvSq;					// radius inverse squared (attenuation factor)
+};
+
+uniform ubo_light
+{
+	sLights lights[MAX_LIGHTS];
+};
 
 // declaration of Phong shading model
 //	(implementation in "utilCommon_fs4x.glsl")
@@ -60,8 +74,41 @@ void calcPhongPoint(
 	in vec4 lightPos, in vec4 lightRadiusInfo, in vec4 lightColor
 );
 
+layout (location = 0) out vec4 rtFragColor;
+
+in vec4 vTexcoord_atlas;
+
+vec4 diffuseColor = vec4(0);
+vec4 SpecularColor = vec4(0);
+
+uniform sampler2D uImage00; //diffuse atlas
+uniform sampler2D uImage04; // textcoord g-buffer
+uniform sampler2D uImage05; //normal g-buffer
+uniform sampler2D uImage06; //position g-buffer
+
 void main()
 {
-	// DUMMY OUTPUT: all fragments are OPAQUE MAGENTA
-	rtFragColor = vec4(1.0, 0.0, 1.0, 1.0);
+
+	vec4 sceneTexcoord = texture(uImage04, vTexcoord_atlas.xy);
+	vec4 color  = texture(uImage00, sceneTexcoord.xy);
+	vec4 normal   = texture(uImage05, sceneTexcoord.xy);
+	vec4 pos   = texture(uImage06, sceneTexcoord.xy);
+
+
+	vec4 diffuseColorTemp;
+	vec4 specularColorTemp;
+
+	for(int i = 0; i < uCount; i++)
+	{
+		calcPhongPoint(diffuseColorTemp,specularColorTemp, kEyePos_view, pos, normal, color,
+		lights[i].worldPos, vec4(lights[i].radius), lights[i].color);
+		diffuseColor += diffuseColorTemp;
+		SpecularColor += specularColorTemp;
+	}
+	diffuseColor /= uCount;
+	diffuseColor = vec4(diffuseColor.rgb,1.0);
+	SpecularColor /= uCount;
+	SpecularColor = vec4(SpecularColor.rgb,1.0);
+
+	rtFragColor = (diffuseColor + SpecularColor) /2;
 }

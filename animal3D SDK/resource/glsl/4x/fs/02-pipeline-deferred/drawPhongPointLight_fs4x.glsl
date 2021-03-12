@@ -37,12 +37,51 @@
 //		(hint: same as deferred shading)
 //	-> calculate final diffuse and specular shading for current light only
 
-flat in int vInstanceID;
+struct sLights
+{
+	vec4 position;					// position in rendering target space
+	vec4 worldPos;					// original position in world space
+	vec4 color;						// RGB color with padding
+	int radius;						// radius (distance of effect from center)
+	int radiusSq;					// radius squared (if needed)
+	int radiusInv;					// radius inverse (attenuation factor)
+	int radiusInvSq;				// radius inverse squared (attenuation factor)
+};
 
-layout (location = 0) out vec4 rtFragColor;
+uniform ubo_light
+{
+	sLights lights[MAX_LIGHTS];
+};
+
+flat in int vInstanceID; //only this light
+
+in vec4 vLightPosition;
+in vec4 vNormal;
+in vec4 vPosition_screen;
+
+uniform sampler2D uImage00; //diffuse atlas
+uniform sampler2D uImage04; //specular atlas
+
+in vec4 vTexcoord_atlas;
+
+layout (location = 0) out vec4 rtDiffuseLight;
+layout (location = 1) out vec4 rtSpecularLight;
+
+void calcPhongPoint(
+	out vec4 diffuseColor, out vec4 specularColor,
+	in vec4 eyeVec, in vec4 fragPos, in vec4 fragNrm, in vec4 fragColor,
+	in vec4 lightPos, in vec4 lightRadiusInfo, in vec4 lightColor
+);
 
 void main()
 {
-	// DUMMY OUTPUT: all fragments are OPAQUE MAGENTA
-	rtFragColor = vec4(1.0, 0.0, 1.0, 1.0);
+	vec4 sceneTexcoord = texture(uImage04, vTexcoord_atlas.xy);
+	vec4 diffuseSample = texture(uImage00, sceneTexcoord.xy);
+
+	rtDiffuseLight = vec4(0); 
+	rtSpecularLight = vec4(0); 
+	//calc and return phone fragment
+	calcPhongPoint(rtDiffuseLight,rtSpecularLight, vPosition_screen, vPosition_screen / vPosition_screen.w, vNormal, diffuseSample,
+		lights[vInstanceID].worldPos, vec4(lights[vInstanceID].radius), lights[vInstanceID].color);
+
 }

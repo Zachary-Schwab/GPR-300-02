@@ -26,6 +26,17 @@
 
 #define MAX_INSTANCES 1024
 
+struct sLights
+{
+	mat4 MVP[MAX_INSTANCES];
+};
+
+uniform ubo_light
+{
+	sLights lights[MAX_INSTANCES];
+};
+
+
 // ****TO-DO: 
 //	-> declare uniform block containing MVP for all lights
 //	-> calculate final clip-space position
@@ -37,7 +48,7 @@ layout (location = 0) in vec4 aPosition;
 
 flat out int vVertexID;
 flat out int vInstanceID;
-
+out vec4 vLightPosition;
 // bias matrix
 const mat4 bias = mat4(
 	0.5, 0.0, 0.0, 0.0,
@@ -49,8 +60,8 @@ const mat4 bias = mat4(
 void main()
 {
 	// DUMMY OUTPUT: directly assign input position to output position
-	gl_Position = aPosition;
-
+	gl_Position = aPosition * lights[gl_InstanceID].MVP[gl_InstanceID] *  aPosition;
+	vLightPosition = bias * gl_Position;
 	vVertexID = gl_VertexID;
 	vInstanceID = gl_InstanceID;
 }
