@@ -39,6 +39,9 @@
 //-----------------------------------------------------------------------------
 // UPDATE
 
+int t = 0;
+int intermissionT;
+
 void a3curves_update_graphics(a3_DemoState* demoState, a3_DemoMode3_Curves* demoMode)
 {
 	a3bufferRefillOffset(demoState->ubo_transform, 0, 0, sizeof(demoMode->modelMatrixStack), demoMode->modelMatrixStack);
@@ -53,15 +56,41 @@ void a3curves_update_animation(a3_DemoState* demoState, a3_DemoMode3_Curves* dem
 	{
 		a3_SceneObjectData* sceneObjectData = demoMode->obj_teapot->dataPtr;
 
-		// ****TO-DO: 
-		//	-> interpolate teapot's position using algorithm that matches path drawn
-		//		(hint: use the one that looks the best)
-		//	-> update the animation timer
-		//		(hint: check if we've surpassed the segment's duration)
-		// teapot follows curved path
-
+		if (t == demoMode->curveWaypointCount)
+		{
+			t = 0;
+		}
+		int i0 = t;
+		float tf = (float)t;
+		int i1 = (int)(i0 + 1) % demoMode->curveWaypointCount;
+		float h00 = 1.0f - 3.0f * tf * tf + 2.0f * tf * tf * tf;
+		float h10 = tf - 2.0f * tf * tf + tf * tf * tf;
+		float h01 = 3.0f * tf * tf - 2.0f * tf * tf * tf;
+		float h11 = -tf * tf + tf * tf * tf;
+		//cant get teh C code to make a new vec4 //
+		a3vec4 pos = { h00 * t * demoMode->curveWaypoint[i0].x + h10 * t * demoMode->curveWaypoint[i0].x + h01 * t * demoMode->curveWaypoint[i1].x + h11 * t * demoMode->curveTangent[i1].x,
+					   h00* t* demoMode->curveWaypoint[i0].y + h10 * t * demoMode->curveWaypoint[i0].y + h01 * t * demoMode->curveWaypoint[i1].y + h11 * t * demoMode->curveTangent[i1].y,
+					   h00* t* demoMode->curveWaypoint[i0].z + h10 * t * demoMode->curveWaypoint[i0].z + h01 * t * demoMode->curveWaypoint[i1].z + h11 * t * demoMode->curveTangent[i1].z,
+					   h00* t* demoMode->curveWaypoint[i0].w + h10 * t * demoMode->curveWaypoint[i0].w + h01 * t * demoMode->curveWaypoint[i1].w + h11 * t * demoMode->curveTangent[i1].w};
+		sceneObjectData->position = pos;
+		if (intermissionT > 10)
+		{
+			t++;
+			intermissionT = 0;
+		}
+		intermissionT++;
+		
+			//that matches path drawn
+			//		(hint: use the one that looks the best)
+			//	-> update the animation timer
+			//		(hint: check if we've surpassed the segment's duration)
+			// teapot follows curved path
 	}
+
 }
+		
+		// ****TO-DO: 
+		//	-> interpolate teapot's positio
 
 void a3curves_update_scene(a3_DemoState* demoState, a3_DemoMode3_Curves* demoMode, a3f64 const dt)
 {

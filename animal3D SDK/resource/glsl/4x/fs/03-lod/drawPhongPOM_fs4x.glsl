@@ -30,7 +30,7 @@ in vbVertexData {
 	mat4 vTangentBasis_view;
 	vec4 vTexcoord_atlas;
 };
-
+ 
 struct sPointLight
 {
 	vec4 viewPos, worldPos, color, radiusInfo;
