@@ -77,16 +77,45 @@ inline int a3animate_updateSkeletonLocalSpace(a3_Hierarchy const* hierarchy,
 		{
 			// testing: copy base pose
 			tmpPose = *pBase;
-
+			
 			// ****TO-DO:
 			// interpolate channels
+			//keyCtrl->time
+			
+			a3real4Lerp(tmpPose.position.v, p0->position.v, p1->position.v, u);
+			a3real4Lerp(tmpPose.euler.v, p0->euler.v, p1->euler.v, u);
+			a3real3Lerp(tmpPose.scale.v, p0->scale.v, p1->scale.v, u);
 
+						
 			// ****TO-DO:
 			// concatenate base pose
+			
+			
+			a3real4Add(tmpPose.position.v, pBase->position.v);
+			a3real4Add(tmpPose.euler.v, pBase->euler.v);
+			a3real3MulComp(tmpPose.scale.v, pBase->scale.v);
+			
+			
+			//make sure between 1 and 360 for angles
 
 			// ****TO-DO:
 			// convert to matrix
+			//Sx 0  0  Posx
+			//0  Sy 0  Posy
+			//0  0  Sz Posz
+			//0  0  0  1
+			//TO-DO rotation vector
 
+
+
+			a3real4x4SetRotateXYZ(localSpaceArray->m, tmpPose.euler.x, tmpPose.euler.y, tmpPose.euler.z);
+			localSpaceArray->m30 = tmpPose.position.x;
+			localSpaceArray->m31 = tmpPose.position.y;
+			localSpaceArray->m32 = tmpPose.position.z;
+
+			localSpaceArray->m00 *= tmpPose.scale.x;
+			localSpaceArray->m11 *= tmpPose.scale.y;
+			localSpaceArray->m22 *= tmpPose.scale.z;
 		}
 
 		// done
@@ -102,8 +131,22 @@ inline int a3animate_updateSkeletonObjectSpace(a3_Hierarchy const* hierarchy,
 	{
 		// ****TO-DO: 
 		// forward kinematics
-		//a3ui32 j;
-		//a3i32 jp;
+		a3ui32 j;
+		a3i32 jp;
+		for (j = 0; j < hierarchy->numNodes; j++)
+		{
+			jp = hierarchy->nodes[j].parentIndex;
+			if (jp >= 0)
+			{
+				a3real4x4Product(objectSpaceArray[j].m, objectSpaceArray[jp].m, localSpaceArray[j].m);
+			}
+			else
+			{
+				objectSpaceArray[j] = localSpaceArray[j];
+			}
+		}
+
+		//current global space = parent global * current local
 
 		// done
 		return 1;

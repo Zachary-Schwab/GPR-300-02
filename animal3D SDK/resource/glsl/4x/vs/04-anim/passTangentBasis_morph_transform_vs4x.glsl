@@ -34,11 +34,26 @@
 //		(hint: results can be stored in local variables named after the 
 //		complete tangent basis attributes provided before any changes)
 
-layout (location = 0) in vec4 aPosition;
-layout (location = 2) in vec3 aNormal;
-layout (location = 8) in vec4 aTexcoord;
-layout (location = 10) in vec3 aTangent;
-layout (location = 11) in vec3 aBitangent;
+
+
+layout (location = 15) in vec4 aTexcoord;
+
+//what is part of a single morph target:
+// -> position, normal, tangent
+// -> 16 available, 16 / 3 = 5 (int)
+
+// what is not part of a single morph target
+// -> texcoord - shared because 2D render is always the same
+// bitangent: normal x tangent
+struct sMorphTarget
+{
+	vec4 position;
+	vec3 normal;
+	vec3 tangent;
+};
+
+layout (location = 0) in sMorphTarget aMorphTarget[5];
+
 
 struct sModelMatrixStack
 {
@@ -66,11 +81,27 @@ out vbVertexData {
 flat out int vVertexID;
 flat out int vInstanceID;
 
+uniform float uTime;
+
 void main()
 {
 	// DUMMY OUTPUT: directly assign input position to output position
 	//gl_Position = aPosition;
 	
+	int index = int(uTime);
+	float param = uTime - index;
+
+	vec4 aPosition;
+	vec3 aTangent, aBitangent, aNormal;
+
+	//testing: copy the first morph target only
+	
+	aPosition =  mix(aMorphTarget[index % 5].position, aMorphTarget[(index + 1) % 5].position, param);
+	aTangent = mix(aMorphTarget[index % 5].tangent, aMorphTarget[(index + 1) % 5].tangent, param);
+	aNormal = mix(aMorphTarget[index % 5].normal, aMorphTarget[(index + 1) % 5].normal, param);
+	aBitangent = cross(aNormal,aTangent);
+	
+
 	sModelMatrixStack t = uModelMatrixStack[uIndex];
 	
 	vTangentBasis_view = t.modelViewMatInverseTranspose * mat4(aTangent, 0.0, aBitangent, 0.0, aNormal, 0.0, vec4(0.0));
