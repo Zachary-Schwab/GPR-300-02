@@ -78,41 +78,42 @@ inline int a3animate_updateSkeletonLocalSpace(a3_Hierarchy const* hierarchy,
 			// testing: copy base pose
 			tmpPose = *pBase;
 			
-			// ****TO-DO:
+			// ****DONE:
 			// interpolate channels
-			//keyCtrl->time
 			
-			a3real4Lerp(tmpPose.position.v, p0->position.v, p1->position.v, u);
 			a3real4Lerp(tmpPose.euler.v, p0->euler.v, p1->euler.v, u);
+			a3real4Lerp(tmpPose.position.v, p0->position.v, p1->position.v, u);
 			a3real3Lerp(tmpPose.scale.v, p0->scale.v, p1->scale.v, u);
 
 						
-			// ****TO-DO:
+			// ****DONE:
 			// concatenate base pose
 			
-			
-			a3real4Add(tmpPose.position.v, pBase->position.v);
+			//add euler angles
 			a3real4Add(tmpPose.euler.v, pBase->euler.v);
+			//add position
+			a3real4Add(tmpPose.position.v, pBase->position.v);
+			//multiply scale
 			a3real3MulComp(tmpPose.scale.v, pBase->scale.v);
 			
 			
 			//make sure between 1 and 360 for angles
 
-			// ****TO-DO:
+			// ****DONE:
 			// convert to matrix
 			//Sx 0  0  Posx
 			//0  Sy 0  Posy
 			//0  0  Sz Posz
 			//0  0  0  1
-			//TO-DO rotation vector
-
-
+			//rotation matrix
 
 			a3real4x4SetRotateXYZ(localSpaceArray->m, tmpPose.euler.x, tmpPose.euler.y, tmpPose.euler.z);
+			//set position matrix
 			localSpaceArray->m30 = tmpPose.position.x;
 			localSpaceArray->m31 = tmpPose.position.y;
 			localSpaceArray->m32 = tmpPose.position.z;
 
+			//multiply the current rotation matrix 
 			localSpaceArray->m00 *= tmpPose.scale.x;
 			localSpaceArray->m11 *= tmpPose.scale.y;
 			localSpaceArray->m22 *= tmpPose.scale.z;
@@ -129,7 +130,7 @@ inline int a3animate_updateSkeletonObjectSpace(a3_Hierarchy const* hierarchy,
 {
 	if (hierarchy && objectSpaceArray && localSpaceArray)
 	{
-		// ****TO-DO: 
+		// ****DONE: 
 		// forward kinematics
 		a3ui32 j;
 		a3i32 jp;
@@ -138,15 +139,15 @@ inline int a3animate_updateSkeletonObjectSpace(a3_Hierarchy const* hierarchy,
 			jp = hierarchy->nodes[j].parentIndex;
 			if (jp >= 0)
 			{
+				//current global space = parent global * current local
 				a3real4x4Product(objectSpaceArray[j].m, objectSpaceArray[jp].m, localSpaceArray[j].m);
 			}
 			else
 			{
+				//set root's object space to its local space
 				objectSpaceArray[j] = localSpaceArray[j];
 			}
 		}
-
-		//current global space = parent global * current local
 
 		// done
 		return 1;
